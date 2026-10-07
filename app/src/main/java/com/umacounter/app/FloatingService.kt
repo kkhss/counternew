@@ -2,10 +2,8 @@ package com.umacounter.app
 
 import android.annotation.SuppressLint
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
@@ -17,6 +15,11 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 class FloatingService : Service() {
+
+    companion object {
+        // MainActivity에서 플로팅 창으로 직접 신호를 쏘기 위한 싱글톤 인스턴스
+        var instance: FloatingService? = null
+    }
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: View
@@ -30,24 +33,17 @@ class FloatingService : Service() {
         R.id.btnCard4, R.id.btnCard5, R.id.btnCard6
     )
 
-    // 크기 단계: 0(소형 230dp), 1(기본 270dp), 2(대형 310dp), 3(특대 350dp)
     private var scaleLevel = 1
     private val baseWidths = intArrayOf(230, 270, 310, 350)
     private val rowHeights = intArrayOf(42, 48, 56, 64)
     private val textSizes = floatArrayOf(8.5f, 9.5f, 11f, 12.5f)
-
-    private val updateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            loadCardsFromPrefs()
-            refreshAllUI()
-        }
-    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate() {
         super.onCreate()
+        instance = this
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -80,12 +76,12 @@ class FloatingService : Service() {
         setupDrag()
         setupCardButtons()
         setupControls()
+    }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(updateReceiver, IntentFilter("com.umacounter.UPDATE_CARDS"), RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(updateReceiver, IntentFilter("com.umacounter.UPDATE_CARDS"))
-        }
+    // MainActivity에서 버튼을 누르면 이 함수가 직접 호출되어 즉시 UI를 갱신합니다.
+    fun reloadCardsFromExternal() {
+        loadCardsFromPrefs()
+        refreshAllUI()
     }
 
     private fun loadCardsFromPrefs() {
@@ -241,7 +237,7 @@ class FloatingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(updateReceiver)
+        instance = null
         if (::floatingView.isInitialized) {
             windowManager.removeView(floatingView)
         }
