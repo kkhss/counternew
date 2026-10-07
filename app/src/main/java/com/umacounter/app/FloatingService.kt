@@ -10,8 +10,10 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.util.TypedValue
 import android.view.*
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 
 class FloatingService : Service() {
@@ -27,6 +29,12 @@ class FloatingService : Service() {
         R.id.btnCard1, R.id.btnCard2, R.id.btnCard3,
         R.id.btnCard4, R.id.btnCard5, R.id.btnCard6
     )
+
+    // 크기 단계: 0(소형 230dp), 1(기본 270dp), 2(대형 310dp), 3(특대 350dp)
+    private var scaleLevel = 1
+    private val baseWidths = intArrayOf(230, 270, 310, 350)
+    private val rowHeights = intArrayOf(42, 48, 56, 64)
+    private val textSizes = floatArrayOf(8.5f, 9.5f, 11f, 12.5f)
 
     private val updateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -52,12 +60,11 @@ class FloatingService : Service() {
         }
 
         val density = resources.displayMetrics.density
-        val initWidth = (260 * density).toInt()
-        val initHeight = (180 * density).toInt()
+        val initWidth = (baseWidths[scaleLevel] * density).toInt()
 
         params = WindowManager.LayoutParams(
             initWidth,
-            initHeight,
+            WindowManager.LayoutParams.WRAP_CONTENT,
             layoutType,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
@@ -73,7 +80,6 @@ class FloatingService : Service() {
         setupDrag()
         setupCardButtons()
         setupControls()
-        setupResize()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(updateReceiver, IntentFilter("com.umacounter.UPDATE_CARDS"), RECEIVER_NOT_EXPORTED)
@@ -118,52 +124,25 @@ class FloatingService : Service() {
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun setupResize() {
-        val btnToggle = floatingView.findViewById<TextView>(R.id.btnToggleResize)
-        val handle = floatingView.findViewById<TextView>(R.id.resizeHandle)
+    private fun applyScale() {
+        val density = resources.displayMetrics.density
+        params.width = (baseWidths[scaleLevel] * density).toInt()
+        params.height = WindowManager.LayoutParams.WRAP_CONTENT
+        windowManager.updateViewLayout(floatingView, params)
 
-        var isResizeMode = false
-        btnToggle.setOnClickListener {
-            isResizeMode = !isResizeMode
-            if (isResizeMode) {
-                handle.visibility = View.VISIBLE
-                btnToggle.setTextColor(Color.parseColor("#4CAF50"))
-                btnToggle.text = "완료"
-            } else {
-                handle.visibility = View.GONE
-                btnToggle.setTextColor(Color.parseColor("#FFEB3B"))
-                btnToggle.text = "크기"
-            }
-        }
+        val row1 = floatingView.findViewById<LinearLayout>(R.id.row1)
+        val row2 = floatingView.findViewById<LinearLayout>(R.id.row2)
+        val newH = (rowHeights[scaleLevel] * density).toInt()
 
-        var startW = 0
-        var startH = 0
-        var startTouchX = 0f
-        var startTouchY = 0f
-        val minW = (180 * resources.displayMetrics.density).toInt()
-        val minH = (120 * resources.displayMetrics.density).toInt()
+        row1.layoutParams.height = newH
+        row1.requestLayout()
+        row2.layoutParams.height = newH
+        row2.requestLayout()
 
-        handle.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    startW = params.width
-                    startH = params.height
-                    startTouchX = event.rawX
-                    startTouchY = event.rawY
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = (event.rawX - startTouchX).toInt()
-                    val dy = (event.rawY - startTouchY).toInt()
-
-                    params.width = (startW + dx).coerceAtLeast(minW)
-                    params.height = (startH + dy).coerceAtLeast(minH)
-                    windowManager.updateViewLayout(floatingView, params)
-                    true
-                }
-                else -> false
-            }
+        val fontSize = textSizes[scaleLevel]
+        for (id in cardButtonIds) {
+            val btn = floatingView.findViewById<Button>(id)
+            btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize)
         }
     }
 
@@ -225,6 +204,8 @@ class FloatingService : Service() {
         val btnMinimize = floatingView.findViewById<TextView>(R.id.btnMinimize)
         val cardContainer = floatingView.findViewById<View>(R.id.cardContainer)
         val btnReset = floatingView.findViewById<Button>(R.id.btnReset)
+        val btnScaleUp = floatingView.findViewById<TextView>(R.id.btnScaleUp)
+        val btnScaleDown = floatingView.findViewById<TextView>(R.id.btnScaleDown)
 
         btnClose.setOnClickListener { stopSelf() }
 
@@ -241,6 +222,20 @@ class FloatingService : Service() {
                 cards[i].isTerminated = false
             }
             refreshAllUI()
+        }
+
+        btnScaleUp.setOnClickListener {
+            if (scaleLevel < baseWidths.size - 1) {
+                scaleLevel++
+                applyScale()
+            }
+        }
+
+        btnScaleDown.setOnClickListener {
+            if (scaleLevel > 0) {
+                scaleLevel--
+                applyScale()
+            }
         }
     }
 
