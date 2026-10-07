@@ -27,7 +27,8 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnSaveCards).setOnClickListener {
             saveCurrentCardsToPrefs()
-            notifyFloatingService()
+            // 플로팅 서비스 인스턴스에 직접 전달 (Broadcast 미도달 문제 원천 차단)
+            FloatingService.instance?.reloadCardsFromExternal()
             Toast.makeText(this, "카드 설정이 플로팅 창에 적용되었습니다.", Toast.LENGTH_SHORT).show()
         }
 
@@ -49,13 +50,6 @@ class MainActivity : AppCompatActivity() {
             stopService(Intent(this, FloatingService::class.java))
             Toast.makeText(this, "카운터 종료", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun notifyFloatingService() {
-        val intent = Intent("com.umacounter.UPDATE_CARDS").apply {
-            setPackage(packageName)
-        }
-        sendBroadcast(intent)
     }
 
     private fun initCardInputs() {
@@ -134,7 +128,7 @@ class MainActivity : AppCompatActivity() {
             typeSpinners[i].setSelection(selIndex)
         }
         saveCurrentCardsToPrefs()
-        notifyFloatingService()
+        FloatingService.instance?.reloadCardsFromExternal()
         Toast.makeText(this, "[$name] 불러오기 완료", Toast.LENGTH_SHORT).show()
     }
 
