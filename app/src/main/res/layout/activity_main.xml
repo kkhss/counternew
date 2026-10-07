@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1E1E1E">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="우마무스메 서포트카드 카운터"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_marginBottom="14dp" />
+
+        <Button
+            android:id="@+id/btnStart"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="오버레이 카운터 띄우기"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF" />
+
+        <Button
+            android:id="@+id/btnStop"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="카운터 끄기"
+            android:backgroundTint="#D32F2F"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="프리셋 덱"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button android:id="@+id/btnPreset1Save" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:text="프리셋1 저장" android:textSize="12sp" android:backgroundTint="#424242" />
+            <Button android:id="@+id/btnPreset1Load" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:text="프리셋1 불러오기" android:textSize="12sp" android:backgroundTint="#33691E" android:layout_marginStart="6dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+            <Button android:id="@+id/btnPreset2Save" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:text="프리셋2 저장" android:textSize="12sp" android:backgroundTint="#424242" />
+            <Button android:id="@+id/btnPreset2Load" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:text="프리셋2 불러오기" android:textSize="12sp" android:backgroundTint="#33691E" android:layout_marginStart="6dp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="서포트 카드 이름 및 속성 설정"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
+            android:id="@+id/inputContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/btnSaveCards"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:text="카드 설정 저장 및 플로팅 창 적용"
+            android:backgroundTint="#1976D2"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="12dp" />
+    </LinearLayout>
+</ScrollView>
